@@ -6,13 +6,13 @@
   &nbsp;&nbsp;
   <img src="assets/aws-iam-identity-and-access-management.svg" alt="IAM" width="40" height="40"/>
   &nbsp;&nbsp;
-  <img src="assets/fastapi.svg" alt="FastAPI" width="40" height="40"/>
+  <img src="assets/fastapi.png" alt="FastAPI" width="40" height="40"/>
   &nbsp;&nbsp;
   <img src="assets/file-type-dvc.svg" alt="DVC" width="40" height="40"/>
   &nbsp;&nbsp;
-  <img src="assets/github-original-wordmark.svg" alt="Github" width="40" height="40"/>
+  <img src="assets/github-original-wordmark.png" alt="Github" width="40" height="40"/>
   &nbsp;&nbsp;
-  <img src="assets/githubactions.svg" alt="Github Actions" width="40" height="40"/>
+  <img src="assets/githubactions.png" alt="Github Actions" width="40" height="40"/>
   &nbsp;&nbsp;
   <img src="assets/jupyter.svg" alt="Jupyter Notebook" width="40" height="40"/>
   &nbsp;&nbsp;
