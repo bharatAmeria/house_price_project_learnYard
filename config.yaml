@@ -1,0 +1,22 @@
+data_upload:
+  root_dir: artifacts/raw_data
+  source_URL: https://drive.google.com/file/d/13juOY4ztSr0UmoaGGy6etPIO0LHToeLI/view?usp=sharing
+  local_data_file: artifacts/data/data.zip
+  unzip_dir: artifacts
+  data_path: artifacts/Train.csv
+
+data_ingest:
+  FILE_NAME : "artifacts/Bengaluru_House_Data.csv"
+  TRAIN_FILE_NAME: "artifacts/data_ingestion/ingested/train.csv"
+  TEST_FILE_NAME: "artifacts/data_ingestion/ingested/test.csv"
+  TRAIN_LABEL_FILE_NAME: artifacts/data_ingestion/ingested/y_train.csv
+  TEST_LABEL_FILE_NAME: artifacts/data_ingestion/ingested/y_test.csv  
+
+model_training :
+  TRAIN_FILE_NAME: "artifacts/data_ingestion/ingested/train.csv"
+  TEST_FILE_NAME: "artifacts/data_ingestion/ingested/test.csv"
+  TRAIN_LABEL_FILE_NAME: artifacts/data_ingestion/ingested/y_train.csv
+  TEST_LABEL_FILE_NAME: artifacts/data_ingestion/ingested/y_test.csv  
+  model: "app/model.pkl"
+
+processed_data_path: "artifacts/processed_data.csv"
