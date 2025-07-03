@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "flask-chart.fullname" . }}
+  annotations:
+    kubernetes.io/ingress.class: gce
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "flask-chart.fullname" . }}
+                port:
+                  number: {{ .Values.service.port }}
