@@ -4,7 +4,7 @@ This project is a complete **end-to-end Machine Learning pipeline** for predicti
 
 ## 🚀 Project Overview
 
-This ML system includes data ingestion, preprocessing, transformation, feature engineering, model training, evaluation, and deployment. It is designed with modularity, automation, and reproducibility in mind — using **Jupyter Notebooks** for experimentation and **FastAPI** for serving predictions. The entire ML lifecycle is tracked using **DVC** and **MLflow**, while **GitHub Actions** and **CI/CD pipelines** ensure automation and production readiness.
+This ML system includes data ingestion, preprocessing, transformation, feature engineering, model training, evaluation, and deployment. It is designed with modularity, automation, and reproducibility in mind — using **Flask** for serving predictions. The entire ML lifecycle is tracked using **DVC** and **MLflow**, while **GitHub Actions** and **CI/CD pipelines** ensure automation and production readiness.
 
 ## 🔧 Tech Stack & Why We Use It
 
@@ -14,11 +14,7 @@ This ML system includes data ingestion, preprocessing, transformation, feature e
   &nbsp;&nbsp;
   <img src="assets/githubactions.png" alt="Github Actions" width="40" height="40"/>
   &nbsp;&nbsp;
-  <img src="assets/jupyter.svg" alt="Jupyter Notebook" width="40" height="40"/>
-  &nbsp;&nbsp;
   <img src="assets/file-type-dvc.svg" alt="DVC" width="40" height="40"/>
-  &nbsp;&nbsp;
-  <img src="assets/mongodb-original.svg" alt="Mongo DB" width="40" height="40"/>
   &nbsp;&nbsp;
   <img src="assets/fastapi.png" alt="FastAPI" width="40" height="40"/>
   &nbsp;&nbsp;
@@ -26,20 +22,18 @@ This ML system includes data ingestion, preprocessing, transformation, feature e
   &nbsp;&nbsp;
   <img src="assets/storage-amazon-s3.svg" alt="S3 Bucket" width="40" height="40"/>
   &nbsp;&nbsp;
-  <img src="assets/aws-ec2.svg" alt="EC2" width="40" height="40"/>
 </p>
 
-1. **Jupyter Notebook** – Interactive development and exploratory data analysis.
-2. **GitHub** – Version control for collaboration and reproducibility.
-3. **GitHub Actions** – Automates testing, training, and deployment workflows (CI/CD).
-4. **CI/CD** – Ensures continuous integration and automated delivery of updated models.
-5. **Manual Deployment on EC2** – Custom deployment on cloud instance for full control and scalability.
-6. **FastAPI** – Lightweight Python web framework to serve ML model predictions via REST API.
-7. **S3 Bucket** – Stores raw and processed datasets and ML models securely and scalably.
-8. **MongoDB** – Stores experiment metadata, model configurations, and logs.
-9. **IAM (AWS Identity & Access Management)** – Secures and manages access to AWS resources like S3.
-10. **DVC (Data Version Control)** – Tracks dataset and model versioning for reproducibility.
-11. **MLflow** – Tracks ML experiments, metrics, artifacts, and model registry.
+1. **GitHub** – Version control for collaboration and reproducibility.
+2. **GitHub Actions** – Automates testing, training, and deployment workflows (CI/CD).
+3. **CI/CD** – Ensures continuous integration and automated delivery of updated models.
+4. **Manual Deployment on EC2** – Custom deployment on cloud instance for full control and scalability.
+5. **Flask** – Lightweight Python web framework to serve ML model predictions via REST API.
+6. **S3 Bucket** – Stores raw and processed datasets and ML models securely and scalably.
+7. **MongoDB** – Stores experiment metadata, model configurations, and logs.
+8. **IAM (AWS Identity & Access Management)** – Secures and manages access to AWS resources like S3.
+9. **DVC (Data Version Control)** – Tracks dataset and model versioning for reproducibility.
+10. **MLflow** – Tracks ML experiments, metrics, artifacts, and model registry.
 
 ## 🛠️ Pipeline Components
 
@@ -56,7 +50,6 @@ This ML system includes data ingestion, preprocessing, transformation, feature e
 ```
 .
 ├── data/                    # Raw and processed data
-├── notebooks/               # EDA and training notebooks
 ├── src/                     # Source code: ingestion, training, utils
 ├── models/                  # Saved models
 ├── .dvc/                    # DVC pipelines and tracking
@@ -140,24 +133,174 @@ uvicorn main:app --reload
 
 Push to GitHub to trigger `.github/workflows/train-deploy.yml`
 
-### 9️⃣ Manual Deployment on EC2
+---
 
-- SSH into your EC2 instance
-- Clone the repo
-- Set up Python environment & install requirements
-- Start FastAPI with Gunicorn or Uvicorn
-- Optionally, set up Nginx + systemd
+# 🚀 GCP Flask App Deployment to GKE using Docker, Helm, and GitHub Actions
 
-### 🔁 Development Cycle
+This document outlines the full deployment lifecycle for a Flask app to **Google Kubernetes Engine (GKE)** using Docker, Helm charts, and GitHub Actions. It also includes billing cleanup instructions to avoid future charges.
 
-1. Update data or code
-2. Commit and push to GitHub
-3. GitHub Actions runs CI/CD workflows
-4. Manually or automatically deploy updated model
+## ⚙️ Step 1: Build Docker Image and Push to GCR
+
+1. Authenticate with Google:
+   ```bash
+   gcloud auth login
+   gcloud config set project <your-project-id>
+   ```
+
+2. Build and push Docker image:
+   ```bash
+   docker build -t gcr.io/<your-project-id>/flask-app:v1 .
+   docker push gcr.io/<your-project-id>/flask-app:v1
+   ```
 
 ---
 
-> ✅ This setup ensures reproducible development, continuous integration, and reliable deployment.
+## ☸️ Step 2: Create and Connect to GKE Cluster
 
-> ✨ Designed with MLOps best practices in mind for scalability, automation, and reproducibility.
+```bash
+gcloud container clusters create flask-cluster --num-nodes=2 --zone=us-central1-c
+gcloud container clusters get-credentials flask-cluster --zone=us-central1-c
+```
 
+---
+
+## 🔧 Step 3: Configure Helm Chart
+
+Edit `helm/flask-chart/values.yaml`:
+
+```yaml
+image:
+  repository: gcr.io/<your-project-id>/flask-app
+  tag: v1
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 5000
+
+serviceAccount:
+  create: false
+  name: ""
+
+autoscaling:
+  enabled: false
+
+ingress:
+  enabled: false
+```
+
+---
+
+## 🚀 Step 4: Deploy App Using Helm
+
+```bash
+helm install flask-release ./helm/flask-chart
+```
+
+To update after changes:
+```bash
+helm upgrade flask-release ./helm/flask-chart
+```
+
+---
+
+## 🌐 Step 5: Access the App
+
+Get the external IP:
+
+```bash
+kubectl get svc
+```
+
+Visit in browser:
+```
+http://<EXTERNAL-IP>
+```
+
+---
+
+## 🛡️ Step 6: Set Up GitHub Actions (CI/CD)
+
+Create `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy to GKE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Auth GCP
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Build & Push
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app:v1 .
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app:v1
+
+      - name: Deploy with Helm
+        run: |
+          gcloud container clusters get-credentials flask-cluster --zone=us-central1-c
+          helm upgrade --install flask-release ./helm/flask-chart             --set image.repository=gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app             --set image.tag=v1
+```
+
+> 🔐 Add GitHub secrets:
+- `GCP_PROJECT_ID`
+- `GCP_SA_KEY` (Base64 encoded service account JSON)
+
+---
+
+## 💸 Step 7: Clean Up to Avoid Billing
+
+You are billed for:
+- GKE clusters
+- Load balancers
+- Static IPs
+- Persistent disks
+- Container images
+
+### Delete Cluster
+```bash
+gcloud container clusters delete flask-cluster --zone=us-central1-c
+```
+
+### Delete Images
+```bash
+gcloud container images delete gcr.io/<your-project-id>/flask-app:v1
+```
+
+### Optional: Shut Down Entire Project
+```bash
+gcloud projects delete <your-project-id>
+```
+
+Or from Console:  
+https://console.cloud.google.com/cloud-resource-manager
+
+---
+
+## 🧼 If You See: `403 - Billing Required`
+To delete the cluster or project:
+- Re-enable billing temporarily at  
+  https://console.cloud.google.com/billing/enable
+- Then delete the resources
+- Disable billing again or shut down the project
+
+---
+
+## 🏁 Done!
+
+You've deployed a Flask app to GKE, automated it with CI/CD, and learned how to clean up to avoid charges. ✅

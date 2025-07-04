@@ -195,3 +195,4 @@ cython_debug/
 
 house/
 artifacts/
+/artifacts
