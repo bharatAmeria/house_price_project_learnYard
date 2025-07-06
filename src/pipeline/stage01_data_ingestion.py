@@ -1,6 +1,5 @@
 import sys
-import pandas as pd
-from src.constants import *
+from src.constants import INGESTION_STAGE_NAME
 from src.components.data_ingestion import IngestData
 from src.logger import logging
 from src.exception import MyException

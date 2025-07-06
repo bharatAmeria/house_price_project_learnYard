@@ -3,8 +3,8 @@ from src.constants import *
 from src.logger import logging
 from src.exception import MyException
 from src.pipeline.stage01_data_ingestion import DataIngestionPipeline
-from src.pipeline.stage03_data_processing import DataProcessingPipeline
-from src.pipeline.stage04_model_training import ModelPipeline
+from src.pipeline.stage02_data_processing import DataProcessingPipeline
+from src.pipeline.stage03_model_training import ModelPipeline
 
 try:
     logging.info(f">>>>>> stage {INGESTION_STAGE_NAME} started <<<<<<")

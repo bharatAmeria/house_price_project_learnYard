@@ -1,0 +1,15 @@
+stages:
+  step1:
+    cmd: PYTHONPATH=. house/bin/python3 src/pipeline/stage01_data_ingestion.py
+    deps:
+      - src/pipeline/stage01_data_ingestion.py
+
+  step2:
+    cmd: PYTHONPATH=. house/bin/python3 src/pipeline/stage02_data_processing.py
+    deps:
+    - src/pipeline/stage02_data_processing.py
+
+  step3:
+    cmd: PYTHONPATH=. house/bin/python3 src/pipeline/stage03_model_training.py
+    deps:
+    - src/pipeline/stage03_model_training.py
