@@ -1,306 +1,206 @@
-# 🏠 House Price Prediction ML Project
+ # 🏠 House Price Prediction with DVC, Flask, Docker & Helm on GCP (GKE)
 
-This project is a complete **end-to-end Machine Learning pipeline** for predicting house prices. It incorporates modern tools for development, versioning, deployment, and monitoring.
+This project demonstrates an end-to-end MLOps workflow for a **regression model** predicting house prices. The primary focus is on **MLOps tooling**: version control, model packaging, containerization, and Kubernetes deployment using Helm on **Google Cloud Platform**.
+
+---
 
 ## 🚀 Project Overview
 
-This ML system includes data ingestion, preprocessing, transformation, feature engineering, model training, evaluation, and deployment. It is designed with modularity, automation, and reproducibility in mind — using **Flask** for serving predictions. The entire ML lifecycle is tracked using **DVC** and **MLflow**, while **GitHub Actions** and **CI/CD pipelines** ensure automation and production readiness.
+**Use Case:** House price prediction based on features like area, number of bedrooms, location, etc.
 
-## 🔧 Tech Stack & Why We Use It
+- 📥 **Input:** JSON with house features  
+- 📤 **Output:** Predicted price  
+- 🔍 **Model:** Linear Regression / LightGBM  
+- 📊 **Dataset:** Banglore Housing data  
 
-<!-- Horizontal icons with spacing -->
-<p align="left">
-  <img src="assets/github-original-wordmark.png" alt="Github" width="40" height="40"/>
-  &nbsp;&nbsp;
-  <img src="assets/githubactions.png" alt="Github Actions" width="40" height="40"/>
-  &nbsp;&nbsp;
-  <img src="assets/file-type-dvc.svg" alt="DVC" width="40" height="40"/>
-  &nbsp;&nbsp;
-  <img src="assets/fastapi.png" alt="FastAPI" width="40" height="40"/>
-  &nbsp;&nbsp;
-  <img src="assets/aws-iam-identity-and-access-management.svg" alt="IAM" width="40" height="40"/>
-  &nbsp;&nbsp;
-  <img src="assets/storage-amazon-s3.svg" alt="S3 Bucket" width="40" height="40"/>
-  &nbsp;&nbsp;
-</p>
+---
 
-1. **GitHub** – Version control for collaboration and reproducibility.
-2. **GitHub Actions** – Automates testing, training, and deployment workflows (CI/CD).
-3. **CI/CD** – Ensures continuous integration and automated delivery of updated models.
-4. **Manual Deployment on EC2** – Custom deployment on cloud instance for full control and scalability.
-5. **Flask** – Lightweight Python web framework to serve ML model predictions via REST API.
-6. **S3 Bucket** – Stores raw and processed datasets and ML models securely and scalably.
-7. **MongoDB** – Stores experiment metadata, model configurations, and logs.
-8. **IAM (AWS Identity & Access Management)** – Secures and manages access to AWS resources like S3.
-9. **DVC (Data Version Control)** – Tracks dataset and model versioning for reproducibility.
-10. **MLflow** – Tracks ML experiments, metrics, artifacts, and model registry.
+## 🔧 Tools & Why They're Used
 
-## 🛠️ Pipeline Components
+| Tool | Purpose | Description |
+|------|---------|-------------|
+| **DVC** | Data & model versioning | Tracks dataset and model files. Enables reproducible pipelines. Stores large files remotely (e.g., Google Drive or GCS). |
+| **scikit-learn** | Model training | Lightweight ML library to build the regression model. |
+| **Flask** | Model serving | Minimal web server to expose a `/predict` API endpoint. |
+| **Gunicorn** | Production WSGI server | Serves Flask app in production (multi-threaded). |
+| **Docker** | Containerization | Packages Flask app, model, and dependencies into a portable image. |
+| **Helm** | Kubernetes deployment | Helm charts manage GKE deployment, service, and configuration. |
+| **GKE (GCP)** | Deployment platform | Host our Docker container using Google Kubernetes Engine. |
 
-- **Data Ingestion** → from S3 or local source.
-- **Data Preprocessing & Transformation** → handled in Jupyter & scripted pipelines.
-- **Model Training** → trained and tracked using MLflow.
-- **Model Evaluation** → using MAE, RMSE, and R² metrics.
-- **Model Serving** → deployed using FastAPI.
-- **CI/CD** → automated using GitHub Actions.
-- **Deployment** → on AWS EC2 with secure S3 integration.
+---
 
 ## 📁 Project Structure
 
-```
-.
-├── data/                    # Raw and processed data
-├── src/                     # Source code: ingestion, training, utils
-├── models/                  # Saved models
-├── .dvc/                    # DVC pipelines and tracking
-├── .github/workflows/       # GitHub Actions CI/CD pipelines
-├── main.py                  # FastAPI inference app
-├── requirements.txt         # Python dependencies
-└── README.md
-```
-
-## 📦 Future Improvements
-
-- Docker containerization and EKS deployment
-- Full ML monitoring with Prometheus & Grafana
-- Real-time prediction and feedback loop
+\`\`\`bash
+house-price-prediction/
+│
+├── data/                     # Raw and processed data
+├── models/                   # Trained models
+├── src/                      # Source code
+│   ├── train.py              # Model training script
+│   └── app.py                # Flask API
+├── dvc.yaml                  # DVC pipeline definition
+├── Dockerfile                # Dockerfile to build the app
+├── helm/                     # Helm chart folder
+│   ├── templates/
+│   └── values.yaml
+├── requirements.txt          # Python dependencies
+└── README.md                 # You are here
+\`\`\`
 
 ---
 
-## 🧑‍💻 Step-by-Step Setup & Development Flow
+## 🧪 Step-by-Step Workflow
 
-### 1️⃣ Clone the Repository
+### 1. ⚙️ Set up DVC for Data Versioning
 
-```bash
-git clone https://github.com/your-username/house-price-ml.git
-cd house-price-ml
-```
+Initialize DVC & add dataset:
+\`\`\`bash
+dvc init
+dvc add data/train.csv
+\`\`\`
 
-### 2️⃣ Set Up Virtual Environment
-
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### 3️⃣ Configure Environment Variables
-
-Create a `.env` file with your secrets for S3, MongoDB, etc.
-
-```env
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
-MONGO_URI=your_mongodb_uri
-```
-
-### 4️⃣ Data Versioning with DVC
-
-```bash
-dvc pull  # Pulls data from remote (S3)
-```
-
-To add or update data:
-
-```bash
-dvc add data/raw_data.csv
+Push data to Google Drive or GCS:
+\`\`\`bash
+dvc remote add -d gdrive gdrive://<folder-id>
 dvc push
-```
+\`\`\`
 
-### 5️⃣ Run Jupyter Notebooks
+### 2. 🤖 Train the Model
 
-For EDA, preprocessing, feature engineering:
-
-```bash
-jupyter notebook
-```
-
-### 6️⃣ Train the Model & Track with MLflow
-
-```bash
+\`\`\`bash
 python src/train.py
-# MLflow UI (optional)
-mlflow ui
-```
+\`\`\`
 
-### 7️⃣ Model Serving with FastAPI
-
-```bash
-uvicorn main:app --reload
-```
-
-### 8️⃣ Set Up GitHub Actions CI/CD
-
-Push to GitHub to trigger `.github/workflows/train-deploy.yml`
+This will train and save the model to \`models/model.joblib\`.
 
 ---
 
-# 🚀 GCP Flask App Deployment to GKE using Docker, Helm, and GitHub Actions
+### 3. 🌐 Serve Model via Flask
 
-This document outlines the full deployment lifecycle for a Flask app to **Google Kubernetes Engine (GKE)** using Docker, Helm charts, and GitHub Actions. It also includes billing cleanup instructions to avoid future charges.
+\`\`\`bash
+python src/app.py
+\`\`\`
 
-## ⚙️ Step 1: Build Docker Image and Push to GCR
-
-1. Authenticate with Google:
-   ```bash
-   gcloud auth login
-   gcloud config set project <your-project-id>
-   ```
-
-2. Build and push Docker image:
-   ```bash
-   docker build -t gcr.io/<your-project-id>/flask-app:v1 .
-   docker push gcr.io/<your-project-id>/flask-app:v1
-   ```
+API Endpoint:
+\`\`\`bash
+POST /predict
+{
+  "features": [value1, value2, ...]
+}
+\`\`\`
 
 ---
 
-## ☸️ Step 2: Create and Connect to GKE Cluster
+### 4. 🐳 Dockerize the Flask App
 
-```bash
-gcloud container clusters create flask-cluster --num-nodes=2 --zone=us-central1-c
-gcloud container clusters get-credentials flask-cluster --zone=us-central1-c
-```
+\`\`\`Dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+EXPOSE 5000
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "src.app:app"]
+\`\`\`
+
+Build and tag the image:
+\`\`\`bash
+docker build -t house-price-api .
+\`\`\`
+
+Push to Google Container Registry (GCR):
+\`\`\`bash
+docker tag house-price-api gcr.io/<project-id>/house-price-api
+docker push gcr.io/<project-id>/house-price-api
+\`\`\`
 
 ---
 
-## 🔧 Step 3: Configure Helm Chart
+### 5. ⛵ Deploy with Helm on GKE
 
-Edit `helm/flask-chart/values.yaml`:
+**Install Helm & configure:**
 
-```yaml
+\`\`\`bash
+gcloud container clusters create ml-cluster --num-nodes=2
+gcloud container clusters get-credentials ml-cluster
+\`\`\`
+
+Update \`values.yaml\`:
+\`\`\`yaml
 image:
-  repository: gcr.io/<your-project-id>/flask-app
-  tag: v1
-  pullPolicy: IfNotPresent
-
+  repository: gcr.io/<project-id>/house-price-api
+  tag: latest
 service:
   type: LoadBalancer
-  port: 80
-  targetPort: 5000
+\`\`\`
 
-serviceAccount:
-  create: false
-  name: ""
+Install Helm chart:
+\`\`\`bash
+helm install house-price helm/
+\`\`\`
 
-autoscaling:
-  enabled: false
-
-ingress:
-  enabled: false
-```
-
----
-
-## 🚀 Step 4: Deploy App Using Helm
-
-```bash
-helm install flask-release ./helm/flask-chart
-```
-
-To update after changes:
-```bash
-helm upgrade flask-release ./helm/flask-chart
-```
-
----
-
-## 🌐 Step 5: Access the App
-
-Get the external IP:
-
-```bash
+Check status:
+\`\`\`bash
 kubectl get svc
-```
+\`\`\`
 
-Visit in browser:
-```
-http://<EXTERNAL-IP>
-```
+Use the external IP to access the \`/predict\` API.
 
 ---
 
-## 🛡️ Step 6: Set Up GitHub Actions (CI/CD)
+## ✅ Example Prediction
 
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to GKE
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Auth GCP
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Build & Push
-        run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app:v1 .
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app:v1
-
-      - name: Deploy with Helm
-        run: |
-          gcloud container clusters get-credentials flask-cluster --zone=us-central1-c
-          helm upgrade --install flask-release ./helm/flask-chart             --set image.repository=gcr.io/${{ secrets.GCP_PROJECT_ID }}/flask-app             --set image.tag=v1
-```
-
-> 🔐 Add GitHub secrets:
-- `GCP_PROJECT_ID`
-- `GCP_SA_KEY` (Base64 encoded service account JSON)
+\`\`\`bash
+curl -X POST http://<external-ip>:5000/predict     -H "Content-Type: application/json"     -d '{"features": [0.00632, 18.0, 2.31, 0, 0.538, 6.575, 65.2, 4.09, 1, 296.0, 15.3, 396.9, 4.98]}'
+\`\`\`
 
 ---
 
-## 💸 Step 7: Clean Up to Avoid Billing
+## 📦 Reproducible Pipelines with DVC
 
-You are billed for:
-- GKE clusters
-- Load balancers
-- Static IPs
-- Persistent disks
-- Container images
+To run the entire ML pipeline:
+\`\`\`bash
+dvc repro
+\`\`\`
 
-### Delete Cluster
-```bash
-gcloud container clusters delete flask-cluster --zone=us-central1-c
-```
-
-### Delete Images
-```bash
-gcloud container images delete gcr.io/<your-project-id>/flask-app:v1
-```
-
-### Optional: Shut Down Entire Project
-```bash
-gcloud projects delete <your-project-id>
-```
-
-Or from Console:  
-https://console.cloud.google.com/cloud-resource-manager
+If you change any stage (e.g., data, parameters), DVC will re-run only the affected parts.
 
 ---
 
-## 🧼 If You See: `403 - Billing Required`
-To delete the cluster or project:
-- Re-enable billing temporarily at  
-  https://console.cloud.google.com/billing/enable
-- Then delete the resources
-- Disable billing again or shut down the project
+## 📚 Requirements
+
+\`\`\`txt
+scikit-learn
+Flask
+gunicorn
+joblib
+dvc[gdrive]
+\`\`\`
 
 ---
 
-## 🏁 Done!
+## 🧹 Cleanup
 
-You've deployed a Flask app to GKE, automated it with CI/CD, and learned how to clean up to avoid charges. ✅
+\`\`\`bash
+helm uninstall house-price
+gcloud container clusters delete ml-cluster
+\`\`\`
+
+---
+
+## 📌 Summary
+
+✅ **End-to-end MLOps project**  
+✅ **Version-controlled ML pipelines**  
+✅ **Scalable deployment via GKE + Helm**  
+✅ **Production-ready Flask API in Docker**
+
+---
+
+## 📎 Related Links
+
+- [DVC Docs](https://dvc.org/doc)
+- [Helm Docs](https://helm.sh/docs/)
+- [Flask Docs](https://flask.palletsprojects.com/)
+- [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine)
+- [Google Container Registry](https://cloud.google.com/container-registry)

@@ -1,0 +1,81 @@
+1. Create repo, clone it in local
+
+2. Create a virtual environment -> pyhton3 -m venv venv
+
+3. Activate the virtual environment -> source venv/bin/Activate
+
+4. Create template.py file and copy code and runt it ( it create a project structure for you )
+
+5. Add code to setup.py, project.toml, testEnvironment.py, requirements.txt, src/constants/__init__.py.
+    Now run testEnvironment.py (verifies the pyhton environment and install dependecies from requirements.txt)
+
+6. Add code to below files/folders inside src dir:
+    - src/logger/__init__.py
+    - src/exception/__init__.py
+    - src/config/__init__.py
+    - src/components/data_ingestion.py
+    - src/components/data_processing.py
+    - src/config/__init__.py
+    - src/components/model.py
+    - src/pipeline/stage01_data_ingestion.py
+    - src/pipeline/stage02_data_processing.py
+    - src/pipeline/stage04_model_training.py
+    - config.yaml
+
+7. To test the pipeline locally. so the at all components are working correctly. 
+   Add to train.py file and run. 
+   It should run without showing any error.
+
+------------------------- Initilaize DVC ---------------------------
+
+1. pip install DVC
+2. dvc init
+3. create a local folder as "dvc_data_artifacts" (temporary work). You can give folder you like.
+4. Add code to file -> dvc.yaml
+5. DVC pipeline is ready to run - dvc repro
+6. Once do - dvc status
+7. Upon successful run push code to github -> git add - commit - push
+
+------------------------- Flask web app ---------------------------
+
+1. Navigate to app directory. Create app.py and add code to it.
+2. Add Html code in the app/templates/index.html. and add processed_data.csv file for prediction.
+3. Also add requirements.txt file and Copy dependencies in it.
+
+------------------------- Make Docker Image and push to Google Container Registory ---------------------------
+1. In Dockerfile add code which copy the files which are in the app directory 
+    (Docker desktop should be open in the background).
+
+2. Sign Up in the google cloud console and create new Project (under you like).
+
+3. Now Install Google Cloud CLI.
+    For macOS -> brew install --cask google-cloud-sdk
+
+    For windows follow link ->  https://cloud.google.com/sdk/docs/install
+    Download Installer -> https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe
+
+4. Authenticate -> gcloud auth login (This will open a browser window asking you to log in with your Google account.)
+
+5. Set your project: -> gcloud config set project <your-project-id>  (copy your project_id and replace with <your-project-id> )
+
+6. Authenticate Docker -> gcloud auth configure-docker
+
+7. Build Image -> docker build -t gcr.io/<your-gcp-project-id>/flask-app:v1 .
+
+8. Push to GCR -> docker push gcr.io/<your-gcp-project-id>/flask-app:v1
+
+9. Create Kubernetes Cluster (GKE) -> 
+    gcloud container clusters create flask-cluster \
+      --num-nodes=2 \
+      --zone=us-central1-c
+    gcloud container clusters get-credentials flask-cluster --zone=us-central1-c
+
+10. Navigate to helm Dir. add Code to values.yaml, deployment.yaml.
+
+11. Deploy the app using Helm:
+     cd helm
+     helm install flask-release flask-chart
+
+12. Get the external IP:
+      kubectl get svc
+

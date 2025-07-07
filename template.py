@@ -11,7 +11,6 @@ list_of_files = [
     f"{project_name}/components/data_ingestion.py",
     f"{project_name}/components/model.py",
     f"{project_name}/config/__init__.py",
-    f"{project_name}/connection/__init__.py",
     f"{project_name}/constants/__init__.py",
     f"{project_name}/exception/__init__.py",
     f"{project_name}/logger/__init__.py",
