@@ -31,7 +31,7 @@ This project demonstrates an end-to-end MLOps workflow for a **regression model*
 
 ## 📁 Project Structure
 
-\`\`\`bash
+```bash
 house-price-prediction/
 │
 ├── data/                     # Raw and processed data
@@ -46,7 +46,7 @@ house-price-prediction/
 │   └── values.yaml
 ├── requirements.txt          # Python dependencies
 └── README.md                 # You are here
-\`\`\`
+```
 
 ---
 
@@ -55,22 +55,16 @@ house-price-prediction/
 ### 1. ⚙️ Set up DVC for Data Versioning
 
 Initialize DVC & add dataset:
-\`\`\`bash
+```bash
 dvc init
 dvc add data/train.csv
-\`\`\`
-
-Push data to Google Drive or GCS:
-\`\`\`bash
-dvc remote add -d gdrive gdrive://<folder-id>
-dvc push
-\`\`\`
+```
 
 ### 2. 🤖 Train the Model
 
-\`\`\`bash
+```bash
 python src/train.py
-\`\`\`
+```
 
 This will train and save the model to \`models/model.joblib\`.
 
@@ -78,41 +72,41 @@ This will train and save the model to \`models/model.joblib\`.
 
 ### 3. 🌐 Serve Model via Flask
 
-\`\`\`bash
+```bash
 python src/app.py
-\`\`\`
+```
 
 API Endpoint:
-\`\`\`bash
+```bash
 POST /predict
 {
   "features": [value1, value2, ...]
 }
-\`\`\`
+```
 
 ---
 
 ### 4. 🐳 Dockerize the Flask App
 
-\`\`\`Dockerfile
+```Dockerfile
 FROM python:3.11-slim
 WORKDIR /app
 COPY . .
 RUN pip install -r requirements.txt
 EXPOSE 5000
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "src.app:app"]
-\`\`\`
+```
 
 Build and tag the image:
-\`\`\`bash
+```bash
 docker build -t house-price-api .
-\`\`\`
+```
 
 Push to Google Container Registry (GCR):
-\`\`\`bash
+```bash
 docker tag house-price-api gcr.io/<project-id>/house-price-api
 docker push gcr.io/<project-id>/house-price-api
-\`\`\`
+```
 
 ---
 
@@ -120,29 +114,29 @@ docker push gcr.io/<project-id>/house-price-api
 
 **Install Helm & configure:**
 
-\`\`\`bash
+```bash
 gcloud container clusters create ml-cluster --num-nodes=2
 gcloud container clusters get-credentials ml-cluster
-\`\`\`
+```
 
 Update \`values.yaml\`:
-\`\`\`yaml
+```yaml
 image:
   repository: gcr.io/<project-id>/house-price-api
   tag: latest
 service:
   type: LoadBalancer
-\`\`\`
+```
 
 Install Helm chart:
-\`\`\`bash
+```bash
 helm install house-price helm/
-\`\`\`
+```
 
 Check status:
-\`\`\`bash
+```bash
 kubectl get svc
-\`\`\`
+```
 
 Use the external IP to access the \`/predict\` API.
 
@@ -150,18 +144,18 @@ Use the external IP to access the \`/predict\` API.
 
 ## ✅ Example Prediction
 
-\`\`\`bash
-curl -X POST http://<external-ip>:5000/predict     -H "Content-Type: application/json"     -d '{"features": [0.00632, 18.0, 2.31, 0, 0.538, 6.575, 65.2, 4.09, 1, 296.0, 15.3, 396.9, 4.98]}'
-\`\`\`
+```bash
+curl -X POST http://<external-ip>:5050/predict     -H "Content-Type: application/json"     -d '{"features": [0.00632, 18.0, 2.31, 0, 0.538, 6.575, 65.2, 4.09, 1, 296.0, 15.3, 396.9, 4.98]}'
+```
 
 ---
 
 ## 📦 Reproducible Pipelines with DVC
 
 To run the entire ML pipeline:
-\`\`\`bash
+```bash
 dvc repro
-\`\`\`
+```
 
 If you change any stage (e.g., data, parameters), DVC will re-run only the affected parts.
 
@@ -169,22 +163,22 @@ If you change any stage (e.g., data, parameters), DVC will re-run only the affec
 
 ## 📚 Requirements
 
-\`\`\`txt
+```txt
 scikit-learn
 Flask
 gunicorn
 joblib
 dvc[gdrive]
-\`\`\`
+```
 
 ---
 
 ## 🧹 Cleanup
 
-\`\`\`bash
+```bash
 helm uninstall house-price
 gcloud container clusters delete ml-cluster
-\`\`\`
+```
 
 ---
 
@@ -197,6 +191,8 @@ gcloud container clusters delete ml-cluster
 
 ---
 
+### For detailed step by step working setup of the project. Navigate to the file {project_flow.txt}.
+
 ## 📎 Related Links
 
 - [DVC Docs](https://dvc.org/doc)
@@ -204,3 +200,12 @@ gcloud container clusters delete ml-cluster
 - [Flask Docs](https://flask.palletsprojects.com/)
 - [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine)
 - [Google Container Registry](https://cloud.google.com/container-registry)
+
+## 📬 Contact
+
+For queries, feedback, or contributions:
+
+👤 [Bharat Aameriya](https://www.linkedin.com/in/bharat-aameriya-24579a261/)  
+📂 Feel free to open an issue or submit a pull request on this repository.
+
+---
