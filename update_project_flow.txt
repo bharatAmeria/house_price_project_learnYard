@@ -1,0 +1,149 @@
+1. Create repo, clone it in local
+
+2. Create a virtual environment -> python -m venv helmproj
+
+3. Activate the virtual environment -> helmproj/Scripts/activate
+
+4. Create template.py file and copy code and runt it ( it create a project structure for you )
+
+5. Add code to setup.py, project.toml, testEnvironment.py, requirements.txt, src/constants/__init__.py.
+    Now run testEnvironment.py (verifies the pyhton environment and install dependecies from requirements.txt)
+
+6. Add code to below files/folders inside src dir:
+    - src/logger/__init__.py
+    - src/exception/__init__.py
+    - src/config/__init__.py
+    - src/components/data_ingestion.py
+    - src/components/data_processing.py
+    - src/config/__init__.py
+    - src/components/model.py
+    - src/pipeline/stage01_data_ingestion.py
+    - src/pipeline/stage02_data_processing.py
+    - src/pipeline/stage03_model_training.py
+    - config.yaml
+
+7. To test the pipeline locally. so that all components are working correctly. 
+   Add to train.py file and run. 
+   It should run without showing any error.
+
+------------------------- Initilaize DVC ---------------------------
+
+1. pip install DVC (if not exist)
+2. dvc init
+4. Add code to file -> dvc.yaml
+5. DVC pipeline is ready to run - dvc repro
+6. Once do - dvc status
+7. Upon successful run push code to github -> git add - commit - push
+
+------------------------- Flask web app ---------------------------
+
+1. Navigate to app directory. Create app.py and add code to it.
+2. Add Html code in the app/templates/index.html. and add processed_data.csv file for prediction.
+3. Also add requirements.txt file and Copy dependencies in it.
+
+------------------------- Make Docker Image and push to Google Container Registory ---------------------------
+1. In Dockerfile add code which copy the files which are in the app directory 
+    (Docker desktop should be open in the background).
+
+2. Sign Up in the google cloud console and create new Project (keep your choice of name).
+
+3. Now Install Google Cloud CLI.
+    For macOS -> brew install --cask google-cloud-sdk
+
+    Documentation link for Installation ->  https://cloud.google.com/sdk/docs/install
+    Download Installer here -> https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe
+
+4. Authenticate on terminal -> "gcloud auth login" (This will open a browser window asking you to log in with your Google account.)
+
+5. Set your project: -> gcloud config set project <your-project-id>  (copy your project_id and replace with <your-project-id> )
+
+6. Configure Docker on gcloud -> gcloud auth configure-docker
+
+7. Build Image and Push -> docker buildx build --platform linux/amd64 -t gcr.io/<your-gcp-project-id>/flask-app:v1 --push .
+   run once locally on terminal to check container -> docker run -p 5050:5050 gcr.io/<project-id>/flask-app:v1
+   (above step will ask you to enable artifact registry api, follow the link that appears in terminal and then re-do push)
+
+8. Create Kubernetes Cluster (GKE) -> 
+    gcloud container clusters create flask-cluster --num-nodes=2 --zone=us-central1-c
+    (This may ask in terminal to set k8s api in your GCR project, once done then re-do the command)
+    (This will also give you a link to setup kubectl to your cluster, follow the below command first in the terminal, 
+    if doesn't work then follow the link & doc from prev command response)
+
+    gcloud container clusters get-credentials flask-cluster --zone=us-central1-c
+    (configure your local kubectl to interact with a specific Google Kubernetes Engine (GKE) cluster.)
+
+    You can now veryfy your cluster status by doing ->
+    kubectl get nodes
+    kubectl get namespaces
+
+9. Navigate to helm Dir. add Code to deployment.yaml, service.yaml, helm/test/values.yaml, helm/test/chart.yaml
+    This upon execution, will create lot of other yaml files as well inside helm/
+
+10. Deploy the app using Helm:
+     cd helm
+     "helm install flask-release flask-chart" (deploy a Helm chart onto your Kubernetes cluster.)
+     kubectl get pods (it should look like below)
+
+     NAME                                         READY   STATUS    RESTARTS   AGE
+     flask-release-flask-chart-<hash>             1/1     Running   0          Xs
+     
+     kubectl get logs <NAME>
+
+12. Get the external IP:
+      kubectl get svc
+
+      NAME                        TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
+      flask-release-flask-chart   LoadBalancer   10.x.x.x        35.xxx.xxx.xxx   80:xxxxx/TCP   Xm
+
+13. Access Your App in Browser
+    
+      http://<EXTERNAL-IP>/
+      Or
+      curl http://<EXTERNAL-IP>/ (If you use terminal)
+
+
+
+****GCP resource cleanup****
+
+-- This will delete all Kubernetes workloads (pods, services, deployments, etc.) in the cluster.
+gcloud container clusters delete flask-cluster --zone=us-central1-c --quiet
+
+-- List your container images
+gcloud container images list
+
+-- List all tags for your image:
+gcloud container images list-tags gcr.io/steady-life-465614-h3/flask-app
+
+-- Then delete your image
+gcloud container images delete gcr.io/steady-life-465614-h3/flask-app:v1 --force-delete-tags --quiet
+gcloud container images list-tags gcr.io/steady-life-465614-h3/flask-app
+
+-- Disable APIs
+gcloud services list --enabled
+gcloud services disable <SERVICE_NAME>
+
+
+-- Delete Artifact Registry repositories
+gcloud artifacts repositories list. (If shows "Listed 0 items." Everything is deleted.)
+gcloud artifacts repositories delete <repo-name> --location=<region> (do it only if deleting anything other than gcr.io)
+
+-- Sometimes deleting the cluster doesn't fully clean up LBs. Run:
+gcloud compute forwarding-rules list. (If shows "Listed 0 items." Everything is deleted.)
+gcloud compute forwarding-rules delete <rule-name> --region=<region>
+
+-- Similarly, clean up:
+gcloud compute target-pools list. (If shows "Listed 0 items." Everything is deleted.)
+gcloud compute target-pools delete <pool-name> --region=<region>
+
+-- And firewall rules if needed:
+gcloud compute firewall-rules list
+gcloud compute firewall-rules delete <rule-name>
+
+-- (Optional) Remove Helm releases (if cluster still exists)
+helm list
+helm uninstall <release-name>
+
+-- To verify everything is gone:
+gcloud container clusters list
+gcloud container images list
+gcloud compute forwarding-rules list

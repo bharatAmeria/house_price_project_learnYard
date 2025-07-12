@@ -17,7 +17,7 @@ list_of_files = [
     f"{project_name}/pipeline/__init__.py",
     f"{project_name}/pipeline/stage01_data_ingestion.py",
     f"{project_name}/pipeline/stage02_data_processing.py",
-    f"{project_name}/pipeline/stage04_model_training.py",
+    f"{project_name}/pipeline/stage03_model_training.py",
     "app/templates/index.html",
     "app/app.py",
     "app/requirements.txt",

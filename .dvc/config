@@ -1,4 +1,6 @@
 [core]
-    remote = myremote
+    remote = mylocal
 ['remote "myremote"']
+    url = ../dvc_data_artifacts
+['remote "mylocal"']
     url = ../dvc_data_artifacts

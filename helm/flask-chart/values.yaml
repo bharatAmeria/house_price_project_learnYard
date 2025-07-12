@@ -1,12 +1,12 @@
 image:
-  repository: gcr.io/coherent-window-464903-b1/flask-app
+  repository: gcr.io/helm-final/flask-app
   tag: v1
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 service:
   type: LoadBalancer
   port: 80
-  targetPort: 5000
+  targetPort: 5050
 
 serviceAccount:
   create: false
@@ -15,18 +15,7 @@ serviceAccount:
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 2
   targetCPUUtilizationPercentage: 80
-
-ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-  hosts:
-    - host: yourdomain.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls: []
 
 resources: {}

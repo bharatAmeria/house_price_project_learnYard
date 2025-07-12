@@ -1,5 +1,6 @@
 # Base image
-FROM python:3.10-slim
+FROM --platform=linux/amd64 python:3.10-slim
+
 
 # Set working directory
 WORKDIR /app
@@ -16,4 +17,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 5050
 
 # Run the Flask app
-CMD ["python", "app/app.py", "--host=0.0.0.0", "--port=5050"]
+CMD ["python", "app/app.py"]
